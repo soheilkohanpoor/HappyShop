@@ -124,29 +124,35 @@ public class CustomerView  {
     }
 
     private VBox CreateTrolleyPage() {
-        Label laPageTitle = new Label("🛒🛒  Trolley 🛒🛒");
-        laPageTitle.setStyle(UIStyle.labelTitleStyle);
 
+        Label laPageTitle = new Label("🛒🛒  Trolley 🛒🛒");
+
+        // just showing the trolley items
         taTrolley = new TextArea();
         taTrolley.setEditable(false);
-        taTrolley.setPrefSize(WIDTH/2, HEIGHT-50);
+        taTrolley.setPrefHeight(260);
 
+        // buttons for trolley control (advanced)
+        Button btnPlus = new Button("+");
+        btnPlus.setOnAction(this::buttonClicked);
+
+        Button btnMinus = new Button("-");
+        btnMinus.setOnAction(this::buttonClicked);
+
+        Button btnRemove = new Button("Remove");
+        btnRemove.setOnAction(this::buttonClicked);
+
+        // normal buttons
         Button btnCancel = new Button("Cancel");
         btnCancel.setOnAction(this::buttonClicked);
-        btnCancel.setStyle(UIStyle.buttonStyle);
 
         Button btnCheckout = new Button("Check Out");
         btnCheckout.setOnAction(this::buttonClicked);
-        btnCheckout.setStyle(UIStyle.buttonStyle);
 
-        HBox hbBtns = new HBox(10, btnCancel,btnCheckout);
-        hbBtns.setStyle("-fx-padding: 15px;");
-        hbBtns.setAlignment(Pos.CENTER);
+        // put all buttons in one row
+        HBox hbBtns = new HBox(10, btnPlus, btnMinus, btnRemove, btnCancel, btnCheckout);
 
         vbTrolleyPage = new VBox(15, laPageTitle, taTrolley, hbBtns);
-        vbTrolleyPage.setPrefWidth(COLUMN_WIDTH);
-        vbTrolleyPage.setAlignment(Pos.TOP_CENTER);
-        vbTrolleyPage.setStyle("-fx-padding: 15px;");
         return vbTrolleyPage;
     }
 

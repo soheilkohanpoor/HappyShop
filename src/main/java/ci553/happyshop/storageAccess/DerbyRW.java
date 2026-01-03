@@ -342,5 +342,23 @@ public class DerbyRW implements DatabaseRW {
             lock.unlock(); // Always release the lock after the operation
         }
     }
+    @Override
+    public ArrayList<Product> getAllProducts() throws SQLException {
+
+        ArrayList<Product> productList = new ArrayList<>();
+        String sql = "SELECT * FROM ProductTable";
+
+        try (Connection con = DriverManager.getConnection(dbURL);
+             Statement stmt = con.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                productList.add(makeProObjFromDbRecord(rs));
+            }
+        }
+
+        return productList;
+    }
+
 
 }

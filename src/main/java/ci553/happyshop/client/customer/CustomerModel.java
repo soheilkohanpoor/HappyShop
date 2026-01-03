@@ -240,6 +240,127 @@ public class CustomerModel {
         }
         return new ArrayList<>(grouped.values());
     }
+    // increase quantity for a product in trolley using the ID typed by user
+    public void increaseQuantity() {
+        String id = cusView.tfId.getText().trim();
+
+        if (id.isEmpty()) {
+            displayLaSearchResult = "Please type Product ID to increase quantity";
+            updateView();
+            return;
+        }
+
+        // get latest stock from database to avoid adding more than available
+        try {
+            Product dbProduct = databaseRW.searchByProductId(id);
+            if (dbProduct == null) {
+                displayLaSearchResult = "No product found with ID " + id;
+                updateView();
+                return;
+            }
+
+            int stock = dbProduct.getStockQuantity();
+            int currentQty = 0;
+
+            for (Product p : trolley) {
+                if (p.getProductId().equals(id)) {
+                    currentQty = p.getOrderedQuantity();
+                    if (currentQty <= 0) currentQty = 1;
+                    break;
+                }
+            }
+
+            // if product is not in trolley yet, add it (but respect stock)
+            if (currentQty == 0) {
+                theProduct = dbProduct; // reuse existing add logic
+                if (canAddSelectedItemToTrolley()) {
+                    addToTrolley();
+                }
+                return;
+            }
+
+            // don't exceed stock
+            if (currentQty + 1 > stock) {
+                displayLaSearchResult = "Cannot increase. Only " + stock + " units available for this product.";
+                updateView();
+                return;
+            }
+
+            // increase quantity in trolley
+            for (Product p : trolley) {
+                if (p.getProductId().equals(id)) {
+                    p.setOrderedQuantity(currentQty + 1);
+                    break;
+                }
+            }
+
+            displayTaTrolley = ProductListFormatter.buildString(trolley);
+            updateView();
+
+        } catch (SQLException e) {
+            displayLaSearchResult = "Database error while increasing quantity";
+            updateView();
+        }
+    }
+
+    // decrease quantity for a product in trolley using the ID typed by user
+    public void decreaseQuantity() {
+        String id = cusView.tfId.getText().trim();
+
+        if (id.isEmpty()) {
+            displayLaSearchResult = "Please type Product ID to decrease quantity";
+            updateView();
+            return;
+        }
+
+        Product found = null;
+        for (Product p : trolley) {
+            if (p.getProductId().equals(id)) {
+                found = p;
+                break;
+            }
+        }
+
+        if (found == null) {
+            displayLaSearchResult = "This product is not in the trolley";
+            updateView();
+            return;
+        }
+
+        int q = found.getOrderedQuantity();
+        if (q <= 0) q = 1;
+
+        if (q > 1) {
+            found.setOrderedQuantity(q - 1);
+        } else {
+            // if quantity becomes 0, remove it
+            trolley.remove(found);
+        }
+
+        displayTaTrolley = trolley.isEmpty() ? "" : ProductListFormatter.buildString(trolley);
+        updateView();
+    }
+
+    // remove product from trolley using the ID typed by user
+    public void removeFromTrolley() {
+        String id = cusView.tfId.getText().trim();
+
+        if (id.isEmpty()) {
+            displayLaSearchResult = "Please type Product ID to remove from trolley";
+            updateView();
+            return;
+        }
+
+        boolean removed = trolley.removeIf(p -> p.getProductId().equals(id));
+
+        if (!removed) {
+            displayLaSearchResult = "This product is not in the trolley";
+        }
+
+        displayTaTrolley = trolley.isEmpty() ? "" : ProductListFormatter.buildString(trolley);
+        updateView();
+    }
+
 
     void cancel() {
         trolley.clear();

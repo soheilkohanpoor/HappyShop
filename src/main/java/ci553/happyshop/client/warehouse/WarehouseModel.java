@@ -62,15 +62,18 @@ public class WarehouseModel {
 
     void doSearch() throws SQLException {
         String keyword = view.tfSearchKeyword.getText().trim();
-        if (!keyword.equals("")) {
+
+        if (!keyword.isEmpty()) {
+            // search by ID or name
             productList = databaseRW.searchProduct(keyword);
+        } else {
+            // if search box is empty, show all products
+            productList = databaseRW.getAllProducts();
         }
-        else{
-            productList.clear();
-            System.out.println("please type product ID or name to search");
-        }
+
         updateView(UpdateForAction.BtnSearch);
     }
+
 
     void doDelete() throws SQLException, IOException {
         System.out.println("delete gets called in model");

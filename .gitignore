@@ -36,3 +36,12 @@ build/
 
 ### Mac OS ###
 .DS_Store
+# database files
+happyShopDB/
+derby.log
+
+# order files
+orders/
+
+# generated images
+images/*.jpg
