@@ -11,19 +11,25 @@ public class CustomerController {
             case "Search":
                 cusModel.search();
                 break;
+
             case "Add to Trolley":
-                cusModel.addToTrolley();
+                // ✅ NEW: check stock before adding
+                if (cusModel.canAddSelectedItemToTrolley()) {
+                    cusModel.addToTrolley();
+                }
                 break;
+
             case "Cancel":
                 cusModel.cancel();
                 break;
+
             case "Check Out":
                 cusModel.checkOut();
                 break;
+
             case "OK & Close":
                 cusModel.closeReceipt();
                 break;
         }
     }
-
 }
