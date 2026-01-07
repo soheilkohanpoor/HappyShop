@@ -70,10 +70,8 @@ public class WarehouseModel {
             // if search box is empty, show all products
             productList = databaseRW.getAllProducts();
         }
-
         updateView(UpdateForAction.BtnSearch);
     }
-
 
     void doDelete() throws SQLException, IOException {
         System.out.println("delete gets called in model");

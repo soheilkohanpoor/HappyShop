@@ -48,8 +48,18 @@ public class CustomerModel {
         }
         // if ID is empty but Name is typed, search by name
         else if (!productName.isEmpty()) {
-            results = databaseRW.searchProduct(productName);
+
+            // if user typed an ID in the name box, try exact ID search first
+            Product byId = databaseRW.searchByProductId(productName);
+            if (byId != null && byId.getStockQuantity() > 0) {
+                results.clear();
+                results.add(byId);
+            } else {
+
+                results = databaseRW.searchProduct(productName);
+            }
         }
+
         // if both fields are empty
         else {
             theProduct = null;
@@ -242,12 +252,21 @@ public class CustomerModel {
     }
     // increase quantity for a product in trolley using the ID typed by user
     public void increaseQuantity() {
+        System.out.println("Model instance: " + this);
+        System.out.println("Trolley size: " + trolley.size());
+
+
+        // If user didn't type an ID, increase the last item in the trolley (better UX)
         String id = cusView.tfId.getText().trim();
 
         if (id.isEmpty()) {
-            displayLaSearchResult = "Please type Product ID to increase quantity";
-            updateView();
-            return;
+            if (trolley.isEmpty()) {
+                displayLaSearchResult = "Trolley is empty.";
+                updateView();
+                return;
+            }
+            // use last added product as default target
+            id = trolley.get(trolley.size() - 1).getProductId();
         }
 
         // get latest stock from database to avoid adding more than available
@@ -275,6 +294,8 @@ public class CustomerModel {
                 theProduct = dbProduct; // reuse existing add logic
                 if (canAddSelectedItemToTrolley()) {
                     addToTrolley();
+                } else {
+                    updateView();
                 }
                 return;
             }
@@ -303,14 +324,20 @@ public class CustomerModel {
         }
     }
 
+
     // decrease quantity for a product in trolley using the ID typed by user
+    // decrease quantity for a product in trolley (if ID is empty, use last item)
     public void decreaseQuantity() {
         String id = cusView.tfId.getText().trim();
 
+        // if user didn't type ID, use last item in trolley
         if (id.isEmpty()) {
-            displayLaSearchResult = "Please type Product ID to decrease quantity";
-            updateView();
-            return;
+            if (trolley.isEmpty()) {
+                displayLaSearchResult = "Trolley is empty.";
+                updateView();
+                return;
+            }
+            id = trolley.get(trolley.size() - 1).getProductId();
         }
 
         Product found = null;
@@ -341,17 +368,26 @@ public class CustomerModel {
         updateView();
     }
 
+
     // remove product from trolley using the ID typed by user
+    // remove product from trolley (if ID is empty, use last item)
     public void removeFromTrolley() {
         String id = cusView.tfId.getText().trim();
 
+        // if user didn't type ID, use last item in trolley
         if (id.isEmpty()) {
-            displayLaSearchResult = "Please type Product ID to remove from trolley";
-            updateView();
-            return;
+            if (trolley.isEmpty()) {
+                displayLaSearchResult = "Trolley is empty.";
+                updateView();
+                return;
+            }
+            id = trolley.get(trolley.size() - 1).getProductId();
         }
-
-        boolean removed = trolley.removeIf(p -> p.getProductId().equals(id));
+        final String targetId = id;
+        boolean removed = trolley.removeIf(
+                p -> p.getProductId().equals(targetId)
+        );
+        ;
 
         if (!removed) {
             displayLaSearchResult = "This product is not in the trolley";
@@ -360,6 +396,7 @@ public class CustomerModel {
         displayTaTrolley = trolley.isEmpty() ? "" : ProductListFormatter.buildString(trolley);
         updateView();
     }
+
 
 
     void cancel() {
